@@ -148,6 +148,10 @@ public class Game : GameWindow
 
         // TODO (T3): la clic stânga, obiectul selectat se mută în punctul din lume aflat sub cursor
         //            (folosiți ScreenToWorld; Depth nu se schimbă)
+        if (MouseState.IsButtonPressed(MouseButton.Left))
+        {
+            sel.Transform.Position = ScreenToWorld(MouseState.Position);
+        }
 
         // TODO (T4, facultativ): clic dreapta = pivot; tasta P ținută = rotație în jurul pivotului
 
@@ -228,8 +232,30 @@ public class Game : GameWindow
     /// <summary>Transformă poziția mouse-ului (pixeli, origine stânga-sus) în coordonate de lume.</summary>
     private Vector2 ScreenToWorld(Vector2 mousePixels)
     {
-        // TODO (T3): pasul 1 (pixel → NDC), apoi pasul 2 (NDC → lume, cu inversa lui view * projection)
-        return Vector2.Zero;
+        // T3: De ce apare semnul minus (sau 1 - ...) în formula pentru Y?
+        // În coordonate de ecran (pixeli), originea (0,0) este în colțul stânga-sus, iar axa Y crește în JOS.
+        // În coordonate NDC (Normalized Device Coordinates), originea (0,0) este în centrul ferestrei,
+        // iar axa Y crește în SUS (de la -1 jos la +1 sus). Inversarea direcției axei Y necesită scăderea din 1.
+
+        // Pasul 1: Pixel (0..W, 0..H) -> NDC (-1..+1, -1..+1)
+        float ndcX = (2.0f * mousePixels.X / ClientSize.X) - 1.0f;
+        float ndcY = 1.0f - (2.0f * mousePixels.Y / ClientSize.Y);
+
+        // Pasul 2: NDC -> Lume (folosind inversa matricii View * Projection)
+        Matrix4 viewProj = _camera.ViewMatrix * _camera.ProjectionMatrix;
+        Matrix4 invViewProj = Matrix4.Invert(viewProj);
+
+        Vector4 ndcPos = new Vector4(ndcX, ndcY, 0.0f, 1.0f);
+        Vector4 worldPos = Vector4.TransformRow(ndcPos, invViewProj);
+
+        // Omogenizare (împărțirea la W dacă este cazul)
+        if (worldPos.W != 0.0f)
+        {
+            worldPos.X /= worldPos.W;
+            worldPos.Y /= worldPos.W;
+        }
+
+        return new Vector2(worldPos.X, worldPos.Y);
     }
 
     /// <summary>Tasta R: obiectele revin la transformările inițiale, camera la starea inițială.</summary>
