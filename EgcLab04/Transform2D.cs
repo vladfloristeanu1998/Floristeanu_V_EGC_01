@@ -15,6 +15,12 @@ public class Transform2D
 
     public Matrix4 ModelMatrix =>
         // TODO (T1): scalare, apoi rotație, apoi translație
+        // T1: Dacă translația ar fi aplicată prima, obiectul s-ar îndepărta de originea (0,0).
+        // Rotația s-ar aplica ulterior tot față de originea lumii, ceea ce ar face ca obiectul 
+        // să descrie un arc de cerc (să "orbiteze") în jurul originii, în loc să se rotească pe loc.
+
+        Matrix4.CreateScale(Scale.X, Scale.Y, 1.0f) *
+        Matrix4.CreateRotationZ(MathHelper.DegreesToRadians(Rotation)) *
         Matrix4.CreateTranslation(Position.X, Position.Y, Depth);
 
     /// <summary>O copie independentă (folosită pentru readucerea scenei în starea inițială).</summary>
