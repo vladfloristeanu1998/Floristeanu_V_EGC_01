@@ -64,7 +64,7 @@ public class Game : GameWindow
         AddObject("pătrat", Shapes.Quad(),
                   new Transform2D { Position = new Vector2(-1.8f, -1.0f), Depth = -3.0f });
         AddObject("triunghi", Shapes.Triangle(),
-                  new Transform2D { Position = new Vector2(-1.2f, 1.0f), Rotation = 45.0f, Scale = new Vector2(1.5f, 0.5f) });
+                  new Transform2D { Position = new Vector2(-1.2f, 1.0f),Rotation=45, Scale = new Vector2(1.5f, 0.5f) });
         AddObject("hexagon", Shapes.RegularPolygon(6, 0.5f),
                   new Transform2D { Position = new Vector2(2.0f, 1.0f) });
         AddObject("cerc", Shapes.RegularPolygon(64, 0.5f),
@@ -100,13 +100,36 @@ public class Game : GameWindow
         // --- Obiectul selectat: tastatura (secțiunea 8) ------------------------------
 
         float dt = (float)args.Time;
+        // Dacă LeftShift este apăsat, timpul se scurge de 3 ori mai repede pentru obiect,
+        // accelerând astfel translația, rotația și scalarea simultan.
+        if (KeyboardState.IsKeyDown(Keys.LeftShift)) dt *= 3.0f;
+
         SceneObject sel = _scene[_selected];
 
         const float moveSpeed = 2.0f;   // unități de lume pe secundă
-        if (KeyboardState.IsKeyDown(Keys.Left))  sel.Transform.Position.X -= moveSpeed * dt;
+        if (KeyboardState.IsKeyDown(Keys.Left)) sel.Transform.Position.X -= moveSpeed * dt;
         if (KeyboardState.IsKeyDown(Keys.Right)) sel.Transform.Position.X += moveSpeed * dt;
-        if (KeyboardState.IsKeyDown(Keys.Down))  sel.Transform.Position.Y -= moveSpeed * dt;
-        if (KeyboardState.IsKeyDown(Keys.Up))    sel.Transform.Position.Y += moveSpeed * dt;
+        if (KeyboardState.IsKeyDown(Keys.Down)) sel.Transform.Position.Y -= moveSpeed * dt;
+        if (KeyboardState.IsKeyDown(Keys.Up)) sel.Transform.Position.Y += moveSpeed * dt;
+
+        // T2: Q / E rotesc obiectul cu 90 grade/sec
+        const float rotSpeed = 90.0f;
+        if (KeyboardState.IsKeyDown(Keys.Q)) sel.Transform.Rotation += rotSpeed * dt; // Q: sens trigonometric (pozitiv)
+        if (KeyboardState.IsKeyDown(Keys.E)) sel.Transform.Rotation -= rotSpeed * dt; // E: sens orar (negativ)
+
+        // T2: Scalare de 1.5 ori/sec. 
+        // De ce prin înmulțire și nu prin adunare? Pentru ca ritmul vizual al creșterii să rămână constant 
+        // relativ la mărimea curentă (progresie geometrică). Dacă am folosi adunarea, 
+        // un obiect mare ar părea că se mărește mult mai lent decât unul mic.
+        float scaleFactor = 1.0f;
+        if (KeyboardState.IsKeyDown(Keys.X)) scaleFactor = MathF.Pow(1.5f, dt);  // X: mărire
+        if (KeyboardState.IsKeyDown(Keys.Z)) scaleFactor = MathF.Pow(1.5f, -dt); // Z: micșorare
+
+        sel.Transform.Scale *= scaleFactor;
+
+        // Limităm (clamp) scara între 0.1 și 10
+        sel.Transform.Scale.X = Math.Clamp(sel.Transform.Scale.X, 0.1f, 10.0f);
+        sel.Transform.Scale.Y = Math.Clamp(sel.Transform.Scale.Y, 0.1f, 10.0f);
 
         // TODO (T2): Q / E rotesc obiectul, Z / X îl scalează
 
