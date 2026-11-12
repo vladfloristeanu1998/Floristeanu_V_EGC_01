@@ -15,7 +15,7 @@ public class Game : GameWindow
 {
     // Camerele (nu depind de OpenGL, pot fi create imediat).
     private readonly FpsCamera _fps = new();
-    // TEMA: aici se adaugă camera orbită (private readonly OrbitCamera _orbit = new();)
+    private readonly OrbitCamera _orbit = new(); // TEMA
     private Camera _active;                        // camera folosită la desenare
 
     // Obiectele care folosesc OpenGL se creează în OnLoad (abia atunci există contextul OpenGL).
@@ -24,8 +24,7 @@ public class Game : GameWindow
     private readonly List<SceneObject> _scene = new();
 
     // Starea de desenare (comutată de la tastatură).
-    // Starea de desenare (comutată de la tastatură).
-    private bool _depthTest = true;    // testul de adâncime pornit de la început    // tasta Z (după TODO 5.2 îl puteți porni de la început: = true)
+    private bool _depthTest = true;    // testul de adâncime pornit de la început
     private bool _faceCulling;         // tasta C
     private bool _wireframe;           // tasta F
 
@@ -55,7 +54,7 @@ public class Game : GameWindow
         VSync = VSyncMode.On;   // swap-ul bufferelor așteaptă reîmprospătarea monitorului
     }
 
-    /// <summary>Apelată O SINGURĂ DATĂ, după crearea ferestrei și a contextului OpenGL.</summary>
+    //Apelată O SINGURĂ DATĂ, după crearea ferestrei și a contextului OpenGL.
     protected override void OnLoad()
     {
         base.OnLoad();
@@ -66,7 +65,7 @@ public class Game : GameWindow
 
         GL.Viewport(0, 0, ClientSize.X, ClientSize.Y);
         _fps.Resize(ClientSize.X, ClientSize.Y);
-        // TEMA: și camera orbită trebuie să afle raportul de aspect
+        _orbit.Resize(ClientSize.X, ClientSize.Y); // TEMA
 
         _shader = Shader.FromFiles("Shaders/shader.vert", "Shaders/shader.frag");
 
@@ -80,7 +79,7 @@ public class Game : GameWindow
         PrintSceneInfo();
     }
 
-    /// <summary>Construiește scena: forme generate procedural, așezate în lume prin Transform3D.</summary>
+    //Construiește scena: forme generate procedural, așezate în lume prin Transform3D.
     private void BuildScene()
     {
         // Formele (fiecare se încarcă o singură dată în GPU, chiar dacă e folosită de mai multe obiecte).
@@ -121,9 +120,6 @@ public class Game : GameWindow
                 AddObject($"bilă {k}", smallSphere).Transform.Position = new Vector3(side, 3.35f, z);
             }
         }
-
-        // TODO 5.8 (facultativ): un cilindru generat procedural, adăugat în scenă
-        //           (de exemplu în punctul (-1.5, 0.75, -6)).
     }
 
     private Mesh AddMesh(Mesh mesh)
@@ -139,25 +135,25 @@ public class Game : GameWindow
         return obj;
     }
 
-    /// <summary>Apelată când se schimbă dimensiunea ferestrei.</summary>
+    //Apelată când se schimbă dimensiunea ferestrei.
     protected override void OnResize(ResizeEventArgs e)
     {
         base.OnResize(e);
 
         GL.Viewport(0, 0, e.Width, e.Height);
-        _fps.Resize(e.Width, e.Height);     // proiecția se adaptează la noul raport de aspect
-        // TEMA: și camera orbită trebuie să afle noul raport de aspect
+        _fps.Resize(e.Width, e.Height);
+        _orbit.Resize(e.Width, e.Height); // TEMA
         _titleDirty = true;
     }
 
-    /// <summary>La revenirea în fereastră (Alt+Tab), prima deplasare a mouse-ului se ignoră.</summary>
+    //La revenirea în fereastră (Alt+Tab), prima deplasare a mouse-ului se ignoră.
     protected override void OnFocusedChanged(FocusedChangedEventArgs e)
     {
         base.OnFocusedChanged(e);
         _ignoreMouseOnce = true;
     }
 
-    /// <summary>Apelată la fiecare iterație a buclei: LOGICA aplicației (intrări, mișcare, timp).</summary>
+    //Apelată la fiecare iterație a buclei: LOGICA aplicației (intrări, mișcare, timp).
     protected override void OnUpdateFrame(FrameEventArgs args)
     {
         base.OnUpdateFrame(args);
@@ -198,7 +194,7 @@ public class Game : GameWindow
         UpdateTitle(args.Time);
     }
 
-    /// <summary>Tastele care comută stări (apăsare, nu ținere: IsKeyPressed).</summary>
+    //Tastele care comută stări (apăsare, nu ținere: IsKeyPressed).
     private void HandleKeys()
     {
         KeyboardState kb = KeyboardState;
@@ -210,8 +206,6 @@ public class Game : GameWindow
         if (kb.IsKeyPressed(Keys.C)) Toggle(ref _faceCulling, "eliminarea fețelor din spate");
         if (kb.IsKeyPressed(Keys.F)) Toggle(ref _wireframe, "contur (wireframe)");
 
-        // L: limitarea cadrelor pe secundă la frecvența monitorului (VSync). Fără VSync, numărul de
-        // cadre crește mult; o cameră care folosește corect dt se mișcă la fel de repede în ambele cazuri.
         if (kb.IsKeyPressed(Keys.L))
         {
             VSync = VSync == VSyncMode.On ? VSyncMode.Off : VSyncMode.On;
@@ -239,10 +233,14 @@ public class Game : GameWindow
             ConsolePanel.PrintMessage(CursorState == CursorState.Grabbed ? "cursor capturat" : "cursor eliberat");
         }
 
-        // TEMA: tasta V comută între camera FPS și camera orbită (vezi textul laboratorului).
+        // TEMA: tasta V comută între camera FPS și camera orbită (o singură dată, corect)
         if (kb.IsKeyPressed(Keys.V))
         {
-            ConsolePanel.PrintMessage("camera orbită nu este încă implementată (tema)");
+            _active = (_active == _fps) ? _orbit : _fps;
+            CursorState = (_active == _orbit) ? CursorState.Normal : CursorState.Grabbed;
+            _ignoreMouseOnce = true;
+            _titleDirty = true;
+            ConsolePanel.PrintMessage($"mod cameră: {_active.Name}");
         }
     }
 
@@ -252,7 +250,7 @@ public class Game : GameWindow
         ConsolePanel.PrintMessage($"{name}: {(flag ? "pornit" : "oprit")}");
     }
 
-    /// <summary>Apelată la fiecare iterație a buclei: DESENAREA unui cadru.</summary>
+    //Apelată la fiecare iterație a buclei: DESENAREA unui cadru.
     protected override void OnRenderFrame(FrameEventArgs args)
     {
         base.OnRenderFrame(args);
@@ -260,7 +258,6 @@ public class Game : GameWindow
 
         // 1. Ștergem imaginea veche: bufferul de culoare și bufferul de adâncime.
         GL.ClearColor(0.12f, 0.14f, 0.18f, 1.0f);
-        // TODO 5.2: ștergerea bufferului de adâncime la fiecare cadru
         GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
 
         // 2. Starea de rasterizare.
@@ -285,7 +282,7 @@ public class Game : GameWindow
         SwapBuffers();
     }
 
-    /// <summary>Apelată O SINGURĂ DATĂ, la închiderea ferestrei: eliberăm resursele GPU.</summary>
+    //Apelată O SINGURĂ DATĂ, la închiderea ferestrei: eliberăm resursele GPU.
     protected override void OnUnload()
     {
         foreach (Mesh mesh in _meshes)
@@ -354,11 +351,6 @@ public class Game : GameWindow
         else GL.Disable(capability);
     }
 
-    /// <summary>
-    /// Contur / plin. Dacă Visual Studio semnalează o eroare la primul parametru,
-    /// folosiți aici tipul acceptat de versiunea voastră (vezi laboratorul 2, Problema 3):
-    /// TriangleFace.FrontAndBack sau MaterialFace.FrontAndBack.
-    /// </summary>
     private static void SetWireframe(bool wireframe)
     {
         GL.PolygonMode(TriangleFace.FrontAndBack, wireframe ? PolygonMode.Line : PolygonMode.Fill);
