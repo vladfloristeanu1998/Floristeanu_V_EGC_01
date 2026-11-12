@@ -61,9 +61,11 @@ public class FpsCamera : Camera
         // --- 1. Orientarea: mouse-ul modifică yaw și pitch -------------------------
 
         // TODO 5.5 (a): deplasarea pe orizontală modifică yaw, cea pe verticală modifică pitch.
-        //               Atenție: pe ecran Y crește în jos, iar pitch pozitiv înseamnă privire în sus.
-        //               Apoi limitați pitch-ul la intervalul [-MaxPitch, MaxPitch].
+        Yaw += mouseDelta.X * MouseSensitivity;
+        Pitch -= mouseDelta.Y * MouseSensitivity; // semn schimbat
 
+        // Limitați pitch-ul la intervalul [-MaxPitch, MaxPitch].
+        Pitch = Math.Clamp(Pitch, -MaxPitch, MaxPitch);
 
         UpdateVectors();
 
@@ -94,12 +96,24 @@ public class FpsCamera : Camera
     /// </summary>
     private void UpdateVectors()
     {
-        // TODO 5.5 (b): Front din yaw și pitch (formula din secțiunea 5.2), apoi Right și Up
-        //               prin produse vectoriale; toți trei normalizați.
-        //               Până atunci camera privește mereu spre -Z.
-        _front = -Vector3.UnitZ;
-        _right = Vector3.UnitX;
-        _up = Vector3.UnitY;
+        // TODO 5.5 (b): Front din yaw și pitch, apoi Right și Up prin produse vectoriale; normalizați.
+
+        // 1. Conversia unghiurilor în radiani
+        float yawRad = MathHelper.DegreesToRadians(Yaw);
+        float pitchRad = MathHelper.DegreesToRadians(Pitch);
+
+        // 2. Calculul vectorului _front folosind trigonometria pe sferă
+        Vector3 front;
+        front.X = MathF.Cos(pitchRad) * MathF.Cos(yawRad);
+        front.Y = MathF.Sin(pitchRad);
+        front.Z = MathF.Cos(pitchRad) * MathF.Sin(yawRad);
+        _front = Vector3.Normalize(front);
+
+        // 3. Calculul lui _right (perpendicular pe _front și pe axa Y a lumii)
+        _right = Vector3.Normalize(Vector3.Cross(_front, WorldUp));
+
+        // 4. Calculul lui _up (perpendicular pe _right și _front)
+        _up = Vector3.Normalize(Vector3.Cross(_right, _front));
     }
 
     public override void Reset()
