@@ -125,8 +125,43 @@ public static class Shapes
                 new Vector3(h, -h, h), new Vector3(h, -h, -h), new Vector3(h, h, -h), new Vector3(h, h, h),
                 new Color4(1.0f, 0.2f, 0.2f, 1.0f));
 
-        // TODO 5.3: fețele 2..5. Pentru fiecare față, imaginați-vă că o priviți din afara cubului
-        //           și stabiliți direcțiile "dreapta" și "sus" (ca în comentariile de mai sus).
+        // TODO 5.3: fețele 2..5. 
+
+        // Fața 2: -Z (spate). Culoare: galben (complementar lui +Z albastru).
+        // Privită din -Z spre +Z: dreapta = -X, sus = +Y.
+        AddFace(vertices, indices, 2,
+                new Vector3(h, -h, -h),    // stânga-jos (+X)
+                new Vector3(-h, -h, -h),   // dreapta-jos (-X)
+                new Vector3(-h, h, -h),    // dreapta-sus (-X)
+                new Vector3(h, h, -h),     // stânga-sus (+X)
+                new Color4(1.0f, 1.0f, 0.2f, 1.0f)); // Galben
+
+        // Fața 3: -X (stânga). Culoare: cyan (complementar lui +X roșu).
+        // Privită din -X spre +X: dreapta = +Z, sus = +Y.
+        AddFace(vertices, indices, 3,
+                new Vector3(-h, -h, -h),   // stânga-jos (-Z)
+                new Vector3(-h, -h, h),    // dreapta-jos (+Z)
+                new Vector3(-h, h, h),     // dreapta-sus (+Z)
+                new Vector3(-h, h, -h),    // stânga-sus (-Z)
+                new Color4(0.2f, 1.0f, 1.0f, 1.0f)); // Cyan
+
+        // Fața 4: +Y (sus). Culoare: verde.
+        // Privită de deasupra (+Y) în jos: dreapta = +X, sus = -Z (jos e +Z).
+        AddFace(vertices, indices, 4,
+                new Vector3(-h, h, h),     // stânga-jos
+                new Vector3(h, h, h),      // dreapta-jos
+                new Vector3(h, h, -h),     // dreapta-sus
+                new Vector3(-h, h, -h),    // stânga-sus
+                new Color4(0.2f, 1.0f, 0.2f, 1.0f)); // Verde
+
+        // Fața 5: -Y (jos). Culoare: magenta (complementar lui +Y verde).
+        // Privită de dedesubt (-Y) în sus: dreapta = +X, sus = +Z (jos e -Z).
+        AddFace(vertices, indices, 5,
+                new Vector3(-h, -h, -h),   // stânga-jos
+                new Vector3(h, -h, -h),    // dreapta-jos
+                new Vector3(h, -h, h),     // dreapta-sus
+                new Vector3(-h, -h, h),    // stânga-sus
+                new Color4(1.0f, 0.2f, 1.0f, 1.0f)); // Magenta
 
         return new Mesh(vertices, indices);
     }
