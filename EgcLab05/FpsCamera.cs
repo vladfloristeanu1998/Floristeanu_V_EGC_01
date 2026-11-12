@@ -81,11 +81,35 @@ public class FpsCamera : Camera
 
         // --- 3. Deplasarea: W A S D ---------------------------------------------------
 
-        // TODO 5.6: direcția "înainte" (în modul mers: proiecția lui Front pe planul orizontal),
-        //           apoi deplasarea cu viteză constantă, independentă de numărul de cadre pe secundă.
-        //           Pași: (1) forward; (2) vectorul "move" = suma direcțiilor tastelor apăsate
-        //           (W +forward, S -forward, D +_right, A -_right); (3) normalizați "move";
-        //           (4) _position += move * viteză * dt (viteza crește de SprintFactor ori cu Shift stânga).
+        // --- 3. Deplasarea: W A S D ---------------------------------------------------
+
+        // TODO 5.6
+        // (1) Proiectăm direcția Front pe planul orizontal (Y devine 0) și o normalizăm.
+        // Asta ne asigură că dacă privim în jos și apăsăm W, nu intrăm în podea, ci mergem înainte pe orizontală.
+        Vector3 forward = Vector3.Normalize(new Vector3(_front.X, 0.0f, _front.Z));
+
+        // (2) Calculăm vectorul "move" ca sumă a direcțiilor tastelor apăsate
+        Vector3 move = Vector3.Zero;
+        if (keyboard.IsKeyDown(Keys.W)) move += forward;
+        if (keyboard.IsKeyDown(Keys.S)) move -= forward;
+        if (keyboard.IsKeyDown(Keys.D)) move += _right;
+        if (keyboard.IsKeyDown(Keys.A)) move -= _right;
+
+        // (3) Normalizăm vectorul "move" ca să nu ne mișcăm mai repede pe diagonală (W + D)
+        if (move.LengthSquared > 0.0f) // Verificăm să nu fie 0 pentru a evita erori (NaN) la normalizare
+        {
+            move = Vector3.Normalize(move);
+        }
+
+        // (4) Calculăm viteza curentă, aplicând factorul de sprint dacă e apăsat Shift stânga
+        float currentSpeed = MoveSpeed;
+        if (keyboard.IsKeyDown(Keys.LeftShift))
+        {
+            currentSpeed *= SprintFactor;
+        }
+
+        // Actualizăm poziția înmulțind cu dt (timpul scurs de la ultimul cadru)
+        _position += move * currentSpeed * dt;
 
         // TODO 5.7 (facultativ): în zbor liber (FreeFly), "forward" este chiar _front,
         //           iar Space urcă și Ctrl stânga coboară (pe axa Y a lumii, WorldUp).
