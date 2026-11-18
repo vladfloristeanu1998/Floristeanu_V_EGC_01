@@ -38,15 +38,24 @@ public sealed class KeyframeTrack
     public void Clear() => _keys.Clear();
 
     /// <summary>Valoarea pistei la momentul <paramref name="time"/> (în secunde).</summary>
+    /// <summary>Valoarea pistei la momentul <paramref name="time"/> (în secunde).</summary>
     public Vector3 Sample(float time)
     {
         if (_keys.Count == 0) return Vector3.Zero;
         if (_keys.Count == 1) return _keys[0];
 
-        // TODO 6.3 (secțiunea 4.2):
-        //   1. position = time / SecondsPerKey, adus în [0, Count) cu %   (de exemplu 1.5)
-        //   2. i = partea întreagă (cheia de plecare), u = partea fracționară (cât din drum)
-        //   3. Lerp între cheia i și cheia următoare ((i + 1) % Count), cu Ease aplicat pe u
-        return _keys[0];   // provizoriu: valoarea primei chei
+        // 1. Aducem timpul în intervalul [0, Duration) pentru buclare continuă
+        float t = time % Duration;
+        if (t < 0f) t += Duration;
+
+        // 2. Găsim segmentul [i0, i1] și fracțiunea locală în [0, 1)
+        // (i1 folosește % _keys.Count ca ultima cheie să revină lin la prima)
+        float pos = t / SecondsPerKey;
+        int i0 = (int)pos % _keys.Count;
+        int i1 = (i0 + 1) % _keys.Count;
+        float localT = pos - MathF.Floor(pos);
+
+        // 3. Aplicăm funcția de easing pe fracțiunea locală și interpolăm liniar
+        return Vector3.Lerp(_keys[i0], _keys[i1], Ease(localT));
     }
 }
