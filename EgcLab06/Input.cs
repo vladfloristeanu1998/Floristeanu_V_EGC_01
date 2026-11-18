@@ -70,21 +70,18 @@ public sealed class Input
         AnyKey(action, k => _keyboard!.IsKeyPressed(k)) || AnyButton(action, b => _mouse!.IsButtonPressed(b));
 
     /// <summary>ELIBERATĂ ACUM: o tastă a acțiunii era apăsată în cadrul anterior și e liberă în acesta.</summary>
-    public bool WasReleased(string action)
-    {
-        // TODO 6.4 (a): după modelul lui WasPressed, cu IsKeyReleased și IsButtonReleased.
-        return false;   // provizoriu
-    }
+    /// <summary>ELIBERATĂ ACUM: o tastă a acțiunii era apăsată în cadrul anterior și e liberă în acesta.</summary>
+    public bool WasReleased(string action) =>
+        AnyKey(action, k => _keyboard!.IsKeyReleased(k)) || AnyButton(action, b => _mouse!.IsButtonReleased(b));
 
     /// <summary>
     /// O AXĂ formată din două acțiuni opuse: -1 (doar <paramref name="negative"/> ținută),
     /// +1 (doar <paramref name="positive"/> ținută), 0 (niciuna sau amândouă).
     /// </summary>
-    public float Axis(string negative, string positive)
-    {
-        // TODO 6.4 (b): (positive ținută ? 1 : 0) - (negative ținută ? 1 : 0)
-        return 0.0f;   // provizoriu
-    }
+
+    // TODO 6.4 (b): (positive ținută ? 1 : 0) - (negative ținută ? 1 : 0)
+    public float Axis(string negative, string positive) =>
+     (IsDown(positive) ? 1f : 0f) - (IsDown(negative) ? 1f : 0f);
 
     // --- Mouse ----------------------------------------------------------------------------
 
