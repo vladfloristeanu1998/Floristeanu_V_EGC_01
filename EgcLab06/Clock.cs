@@ -28,15 +28,27 @@ public sealed class Clock
     public bool Paused { get; set; }
 
     /// <summary>Apelată O DATĂ pe cadru, la începutul lui Game.OnUpdateFrame.</summary>
-    public void Tick(double realSeconds)
+    public void Tick(float elapsedSeconds)
     {
-        RealDeltaTime = (float)realSeconds;
+        // 1. Reținem timpul real scurs de la ultimul cadru
+        RealDeltaTime = elapsedSeconds;
 
-        // TODO 6.1: timpul de joc
-        //   1. limitați pasul real la MaxDelta (Math.Min / MathF.Min);
-        //   2. în pauză pasul de joc este 0, altfel este pasul limitat înmulțit cu TimeScale.
-        DeltaTime = RealDeltaTime;   // provizoriu: timpul de joc = timpul real
+        // 2. Limităm pasul real la MaxDelta pentru a preveni salturile uriașe 
+        // (Dacă pasul nu ar fi limitat, o blocare momentană a ferestrei/lag-ul ar genera 
+        // un DeltaTime uriaș, făcând obiectele să "sară" prin perete/podea - tunneling)
+        float limitedDelta = Math.Min(RealDeltaTime, MaxDelta);
 
+        // 3. Calculăm DeltaTime (timpul de joc): 0 în pauză, altfel pasul limitat * TimeScale
+        if (Paused)
+        {
+            DeltaTime = 0f;
+        }
+        else
+        {
+            DeltaTime = limitedDelta * TimeScale;
+        }
+
+        // Actualizăm timpul total scurs în simulare/joc
         TotalTime += DeltaTime;
     }
 

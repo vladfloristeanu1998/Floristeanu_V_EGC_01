@@ -119,7 +119,7 @@ public class Game : GameWindow
         base.OnUpdateFrame(args);
 
         // 1. Timpul: real -> de joc.  2. Input: starea dispozitivelor pentru acest cadru.
-        _clock.Tick(args.Time);
+        _clock.Tick((float)args.Time);
         _input.Update(KeyboardState, MouseState);
 
         // Un pas real neobișnuit de mare (blocare, fereastra trasă cu mouse-ul) este semnalat în consolă.

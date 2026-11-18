@@ -19,17 +19,19 @@ public static class Easing
     public static float EaseIn(float t) => t * t;
 
     /// <summary>Pornește repede și frânează la sosire.</summary>
+   
     public static float EaseOut(float t)
     {
         // TODO 6.2 (a): 1 - (1 - t)²   (EaseIn "întoarsă")
-        return t;   // provizoriu
+        float inv = 1f - t;
+        return 1f - inv * inv;
     }
 
     /// <summary>Pornește încet, accelerează, apoi frânează la sosire.</summary>
     public static float EaseInOut(float t)
     {
         // TODO 6.2 (a): t² · (3 - 2t)
-        return t;   // provizoriu
+        return t * t * (3f - 2f * t);
     }
 
     /// <summary>Toate funcțiile, cu nume (pentru scena laboratorului și pentru meniuri).</summary>
