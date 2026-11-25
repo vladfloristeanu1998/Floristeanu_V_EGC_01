@@ -150,6 +150,15 @@ public sealed class LabScene : Scene
         _colorB.Update(dt);
         _gradient.Uniforms.Set("uColorA", _colorA.Value);
         _gradient.Uniforms.Set("uColorB", _colorB.Value);
+
+        // RĂSPUNS ÎNTREBARE P2:
+        // Load() se execută o singură dată la pornire și salvează în _gradient.Uniforms doar culorile
+        // inițiale statice (a0, b0). Obiectele Tween (_colorA, _colorB) calculează în C# valorile
+        // intermediare la fiecare cadru pe parcursul tranziției de 0.8 s (declanșată de tasta Space),
+        // dar nu modifică automat dicționarul UniformSet al materialului. Dacă nu am copia
+        // _colorA.Value și _colorB.Value în Update() la fiecare cadru, Scene.Draw() ar trimite
+        // mereu către shader aceleași valori vechi din Load(), iar tranziția nu s-ar vedea pe ecran.
+
         // TODO 7.3 (b): la fiecare cadru, copiați valorile tween-urilor (_colorA.Value, _colorB.Value)
         //              în uniformele uColorA și uColorB ale materialului _gradient
         //              (după modelul paletei de mai jos).
