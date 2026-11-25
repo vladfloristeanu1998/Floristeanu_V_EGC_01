@@ -146,6 +146,10 @@ public sealed class LabScene : Scene
         }
         _colorA.Update(dt);
         _colorB.Update(dt);
+        _colorA.Update(dt);
+        _colorB.Update(dt);
+        _gradient.Uniforms.Set("uColorA", _colorA.Value);
+        _gradient.Uniforms.Set("uColorB", _colorB.Value);
         // TODO 7.3 (b): la fiecare cadru, copiați valorile tween-urilor (_colorA.Value, _colorB.Value)
         //              în uniformele uColorA și uColorB ale materialului _gradient
         //              (după modelul paletei de mai jos).

@@ -21,14 +21,21 @@ void main()
         return;
     }
 
-   // TODO 7.3 (a): degradeul (sectiunea 5.2)
-   //   1. directia: vec2 dir = vec2(cos(radians(uAngle)), sin(radians(uAngle)));
-   //   2. fractiunea t: proiectia lui (vUV - 0.5) pe dir, plus 0.5, limitata la [0, 1]:
-   //        float t = clamp(dot(vUV - 0.5, dir) + 0.5, 0.0, 1.0);
-   //   3. treptele: daca uSteps >= 2, cu n = float(uSteps):
-   //        t = min(floor(t * n), n - 1.0) / (n - 1.0);
-   //   4. culoarea: mix(uColorA, uColorB, t).
-   vec3 color = vec3(0.35);
+   // 1. Directia unitate data de uAngle (grade -> radiani)
+    vec2 dir = vec2(cos(radians(uAngle)), sin(radians(uAngle)));
+
+    // 2. Proiectia coordonatei centrate pe directie, adusa in [0, 1]
+    float t = clamp(dot(vUV - 0.5, dir) + 0.5, 0.0, 1.0);
+
+    // 3. Trepte discrete (posterizare) cand uSteps >= 2
+    if (uSteps >= 2)
+    {
+        float n = float(uSteps);
+        t = min(floor(t * n), n - 1.0) / (n - 1.0);
+    }
+
+    // 4. Interpolarea liniara intre culorile de capat
+    vec3 color = mix(uColorA, uColorB, t);
 
     FragColor = vec4(color * vColor, 1.0);
 }
