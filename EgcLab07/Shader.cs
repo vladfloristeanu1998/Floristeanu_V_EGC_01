@@ -70,14 +70,27 @@ public sealed class Shader : IDisposable
     /// </summary>
     public bool Reload()
     {
-        // TODO 7.1: reîncărcarea programului (secțiunea 2.3)
-        //   1. construiți un program NOU din fișiere: if (!TryBuild(out int newHandle)) return false;
-        //      (la eroare, TryBuild a afișat deja mesajul, iar programul vechi rămâne activ);
-        //   2. ștergeți programul vechi (GL.DeleteProgram(Handle)), apoi Handle = newHandle; IsFallback = false;
-        //   3. locațiile uniformelor aparțin programului vechi: goliți _uniformLocations, _missing și _reported;
-        //   4. return true.
-        ConsolePanel.PrintMessage($"{Name}: reîncărcarea nu este scrisă încă (TODO 7.1).");
-        return false;
+        // RĂSPUNS ÎNTREBARE P1:
+        // Dacă am șterge programul vechi (GL.DeleteProgram(Handle)) înainte de a compila noul shader,
+        // iar compilarea/link-area ar eșua (ex. o greșeală de sintaxă la salvare), Handle ar indica spre un
+        // program invalid/șters. Apelul GL.UseProgram(Handle) ar genera o eroare OpenGL (GL_INVALID_VALUE),
+        // iar obiectele care folosesc acest shader ar dispărea din scenă sau s-ar randa greșit cu programul
+        // altui obiect. Păstrând programul vechi până la succesul lui TryBuild, scena rămâne intactă.
+
+        // 1. Compilăm și legăm programul nou; dacă eșuează, TryBuild afișează eroarea și ieșim fără să stricăm Handle-ul vechi.
+        if (!TryBuild(out int newHandle)) return false;
+
+        // 2. Noul program este valid: eliberăm resursa GPU a programului vechi și actualizăm Handle-ul.
+        GL.DeleteProgram(Handle);
+        Handle = newHandle;
+        IsFallback = false;
+
+        // 3. Locațiile uniformelor sunt specifice fiecărui program OpenGL, deci invalidăm cache-ul vechi.
+        _uniformLocations.Clear();
+        _missing.Clear();
+        _reported.Clear();
+
+        return true;
     }
 
     /// <summary>Adevărat dacă unul dintre fișiere a fost salvat după ultima compilare (pentru reîncărcarea automată).</summary>

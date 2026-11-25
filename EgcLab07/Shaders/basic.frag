@@ -8,5 +8,5 @@ out vec4 FragColor;
 
 void main()
 {
-    FragColor = vec4(vColor, 1.0) * uTint;
+    FragColor = vec4(vColor * vec3(1.0, 0.6, 0.4), 1.0) * uTint;
 }
